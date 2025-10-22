@@ -14,7 +14,7 @@ int main()
     }
     printf("\n");
 
-    quicksort(arr, 0, n - 1);
+    quicksort_int(arr, n);
 
     printf("sorted array:\t");
     for (int i = 0; i < n; i++)

@@ -1,64 +1,82 @@
+#include <string.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include <sys/types.h>
+
 #define THRESHOLD 10
 
-void insertion_sort(int arr[], int left, int right)
+static void insertion_sort(void *arr, size_t n, size_t size,
+                           bool (*less)(const void *, const void *))
 {
-    for (int i = left + 1; i <= right; i++)
+    char *a = arr;
+    char *tmp = malloc(size);
+
+    for (size_t i = 1; i < n; i++)
     {
-        int key = arr[i];
-        int j = i - 1;
-        while (j >= left && arr[j] > key)
+        memcpy(tmp, a + i * size, size);
+        ssize_t j = i - 1;
+        while (j >= 0 && less(tmp, a + j * size))
         {
-            arr[j + 1] = arr[j];
+            memcpy(a + (j + 1) * size, a + j * size, size);
             j--;
         }
-        arr[j + 1] = key;
+        memcpy(a + (j + 1) * size, tmp, size);
     }
+
+    free(tmp);
 }
 
-int partition(int arr[], int left, int right)
+static size_t partition(void *arr, size_t n, size_t size,
+                        bool (*less)(const void *, const void *))
 {
-    int pivot = arr[right];
-    int i = left - 1;
+    char *a = arr;
+    char *pivot = malloc(size);
+    memcpy(pivot, a + (n - 1) * size, size);
+    ssize_t i = -1;
 
-    for (int j = left; j < right; j++)
+    for (size_t j = 0; j < n - 1; j++)
     {
-        if (arr[j] <= pivot)
+        if (less(a + j * size, pivot) || !less(pivot, a + j * size))
         {
             i++;
-            int temp = arr[i];
-            arr[i] = arr[j];
-            arr[j] = temp;
+            char temp[size];
+            memcpy(temp, a + i * size, size);
+            memcpy(a + i * size, a + j * size, size);
+            memcpy(a + j * size, temp, size);
         }
     }
-    int temp = arr[i + 1];
-    arr[i + 1] = arr[right];
-    arr[right] = temp;
+
+    char temp[size];
+    memcpy(temp, a + (i + 1) * size, size);
+    memcpy(a + (i + 1) * size, a + (n - 1) * size, size);
+    memcpy(a + (n - 1) * size, temp, size);
+
+    free(pivot);
     return i + 1;
 }
 
-void quicksort(int arr[], int left, int right)
+void quicksort(void *arr, size_t n, size_t size,
+               bool (*less)(const void *, const void *))
 {
-    while (left < right)
+    if (n < THRESHOLD)
     {
-        if (right - left + 1 < THRESHOLD)
-        {
-            insertion_sort(arr, left, right);
-            break;
-        }
-        else
-        {
-            int pivotIndex = partition(arr, left, right);
-
-            if (pivotIndex - left < right - pivotIndex)
-            {
-                quicksort(arr, left, pivotIndex - 1);
-                left = pivotIndex + 1;
-            }
-            else
-            {
-                quicksort(arr, pivotIndex + 1, right);
-                right = pivotIndex - 1;
-            }
-        }
+        insertion_sort(arr, n, size, less);
+        return;
     }
+
+    size_t pivotIndex = partition(arr, n, size, less);
+
+    if (pivotIndex > 0)
+        quicksort(arr, pivotIndex, size, less);
+    quicksort((char *)arr + (pivotIndex + 1) * size, n - pivotIndex - 1, size, less);
+}
+
+static bool int_less(const void *a, const void *b)
+{
+    return (*(int *)a) < (*(int *)b);
+}
+
+void quicksort_int(int *arr, size_t n)
+{
+    quicksort((void *)arr, n, sizeof(int), int_less);
 }
