@@ -1,11 +1,20 @@
 #include "include/quicksort.h"
 #include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
 
 // usage example
 int main()
 {
-    int arr[] = {9, 4, 6, 2, 7, 1, 3, 8, 5, 0};
-    int n = sizeof(arr) / sizeof(arr[0]);
+    int n = 100;
+    int arr[n];
+
+    srand((unsigned int)time(NULL));
+
+    for (int i = 0; i < 100; i++)
+    {
+        arr[i] = rand() % 100;
+    }
 
     printf("\nunsorted array:\t");
     for (int i = 0; i < n; i++)

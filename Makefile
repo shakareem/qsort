@@ -1,7 +1,7 @@
 CC = gcc
 CFLAGS = -Iinclude -Wall -Wextra -O2
 
-run: main
+run: all
 	./main
 
 all: main
